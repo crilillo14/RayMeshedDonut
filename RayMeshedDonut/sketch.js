@@ -55,13 +55,14 @@ function setup() {
 
 }
 
+
+
+
 function draw() {
 
-  frameRate(60)
+  frameRate(100)
   background(0);
-
   translate(width / 2, height / 2);
-
   scale(1, -1);
 
   //noStroke();
@@ -147,80 +148,3 @@ function meshDonut() {
 
   return triangles;
 }
-
-
-class Point {
-  constructor(x, y, z) {
-    this.x = x;
-    this.y = y;
-    this.z = z;
-    this.xp;
-    this.yp;
-    this.brightness = 1;
-  }
-
-  show() {
-    if (this.brightness > 0) {
-      fill(this.brightness * 255);
-      this.getPrimeCoords();
-      circle(this.xp, this.yp, 2);
-    }
-  }
-
-  getPrimeCoords() {
-    this.xp = (x0 + this.x) * (zp / (this.z + z0));
-    this.yp = (y0 + this.y) * (zp / (this.z + z0));
-
-  }
-
-  rotateX(angle) {
-    let newY = (this.y - y0) * cos(-angle) - (this.z - z0) * sin(-angle);
-    let newZ = (this.y - y0) * sin(-angle) + (this.z - z0) * cos(-angle);
-    this.y = y0 + newY;
-    this.z = z0 + newZ;
-  }
-
-  rotateY(angle) {
-    let newX = (this.z - z0) * sin(angle) + (this.x - x0) * cos(angle);
-    let newZ = (this.z - z0) * cos(angle) - (this.x - x0) * sin(angle);
-    this.x = x0 + newX;
-    this.z = z0 + newZ;
-  }
-
-  rotateZ(angle) {
-    let newX = (this.x - x0) * cos(-angle) - (this.y - y0) * sin(-angle);
-    let newY = (this.x - x0) * sin(-angle) + (this.y - y0) * cos(-angle);
-    this.x = x0 + newX;
-    this.y = y0 + newY;
-  }
-}
-
-class Triangle {
-  constructor(v1 , v2 , v3) {
-    this.v1 = v1;
-    this.v2 = v2;
-    this.v3 = v3;
-    this.illumination;
-
-  }
-
-  show() {
-
-    this.illumination = this.getBrightness() * 255;
-    fill(this.illumination, 100)
-    this.v1.getPrimeCoords();
-    this.v2.getPrimeCoords();
-    this.v3.getPrimeCoords();
-
-    triangle(this.v1.xp, this.v1.yp, this.v2.xp , this.v2.yp , this.v3.xp , this.v3.yp)
-  }
-
-  getBrightness() {
-    return (this.v1.brightness + this.v2.brightness + this.v3.brightness) / 3;
-  }
-}
-
-
-
-
-
