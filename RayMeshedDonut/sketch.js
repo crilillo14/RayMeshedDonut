@@ -1,28 +1,38 @@
+
 const deg = 180;
 const angularVelDampifier = 0.1
 let orig = [];
 let x, y, z, xp, yp;
-const zp = 150;
+const zp = 40000;
 const dtheta = 10;
-const dalpha = 10;
+const dalpha = 5;
 const dbeta = 1;
 const dphi = 1;
 const dgamma = 1;
-const x0 = 0, y0 = 0, z0 = 500;
+const x0 = 0, y0 = 0, z0 = 60000;
 let r1 = 600, r2 = 300;
-let counter = 0;
-let light = [0, 0, 0];
+let counter = 20;
+let light = [10000, 0, 60000];
 let a, b;
 let torus = [];
+let torusCenter;
 
+let Dshader;
+
+function preload() {
+  Dshader = loadShader('shader.vert' , 'shader.frag');
+}
 
 function setup() {
 
-  createCanvas(windowWidth, windowHeight);
+  createCanvas(windowWidth, windowHeight, WEBGL);
   angleMode(DEGREES);
+
+  torusCenter = new p5.Vector(x0 , y0, z0);
 
   middles = [];
   middles.push(new Point(x0 + r1 , y0, z0))
+  
 
 
   // creating the original circle
@@ -60,14 +70,15 @@ function setup() {
 
 function draw() {
 
-  frameRate(100)
   background(0);
   translate(width / 2, height / 2);
   scale(1, -1);
 
   //noStroke();
 
+  shader(Dshader);
 
+  Dshader.setUniform('u_lightPosition', light);
 
 
   for (let i = 0; i < torus.length; i++) {
@@ -76,11 +87,14 @@ function draw() {
     middles[i].rotateY(dgamma)
     middles[i].rotateZ(dphi);
 
+
     for (p of torus[i]) {
 
       p.rotateX(dbeta);
       p.rotateY(dgamma);
       p.rotateZ(dphi);
+
+
       
     }
   }
@@ -97,6 +111,7 @@ function draw() {
       Nx /= normalabs;
       Ny /= normalabs;
       Nz /= normalabs;
+      p.normal = new p5.Vector(Nx , Ny , Nz);
 
       let lvectorx = -((p.x + x0) - light[0]);
       let lvectory = -((p.y + y0) - light[1]);
@@ -107,20 +122,41 @@ function draw() {
       lvectory /= lightabs;
       lvectorz /= lightabs;
 
-      let Bright = Nx * lvectorx + Ny * lvectory + Nz * lvectorz;
-      p.brightness = constrain(Bright, 0, 1);
-      p.show();
+      p.brightness = (Nx * lvectorx + Ny * lvectory + Nz * lvectorz) / (sqrt(lvectorx * lvectorx + lvectory * lvectory + lvectorz * lvectorz));
+      
+      // p.show();
 
     }
   }
-
+  
   triangles = meshDonut();
-
+  /*
   for(i = 0; i < triangles.length; i++) {
     triangles[i].show()
   }
+  */
+
+  for (let triangle of triangles) {
+    // Pass the vertex positions and normals as attributes
+
+    let Tnormal = triangle.getNormal();
+    let Tposition = triangle.getPosition();
+
+    Dshader.setAttribute('a_position', [Tposition.x, Tposition.y, Tposition.z]);
+    Dshader.setAttribute('a_normal', [Tnormal.x, Tnormal.y, Tnormal.z]);
+    Dshader.set
+
+    // Draw the triangle
+    beginShape(TRIANGLES);
+    vertex(triangle.v1.x, triangle.v1.y, triangle.v1.z);
+    vertex(triangle.v2.x, triangle.v2.y, triangle.v2.z);
+    vertex(triangle.p3.x, triangle.p3.y, triangle.p3.z);
+    endShape(CLOSE);
+  }
+
+
   // Increment the counter
-  counter++;
+  // counter+= 0.1;
 }
 
 
@@ -148,3 +184,5 @@ function meshDonut() {
 
   return triangles;
 }
+
+
